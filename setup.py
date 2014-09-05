@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-
+from setuptools import setup
 
 from pgpxmlrpc import __version__ as version
 
@@ -13,7 +9,7 @@ from pgpxmlrpc import __version__ as version
 setup (
     name = 'pgpxmlrpc',
     description = 'PGP-encrypted transport for XML-RPC protocol',
-    long_description = open ('README.md').read (),
+    long_description = 'This module provides PGP-encrypted transport for XML-RPC protocol',
     license = 'LGPLv3',
     version = version,
     author = 'Ruslan V. Uss',
@@ -21,7 +17,6 @@ setup (
     maintainer = 'Ruslan V. Uss',
     maintainer_email = 'unclerus@gmail.com',
     py_modules = ['pgpxmlrpc'],
-    data_files = [('', ['LICENSE.txt', 'README.md'])],
     platforms = 'No particular restrictions',
     url = 'https://github.com/UncleRus/pgpxmlrpc',
     classifiers = [

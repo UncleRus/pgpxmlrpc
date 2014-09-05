@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '1.0.1'
+__version__ = '1.1.0'
 
 
 import regnupg
@@ -13,21 +13,24 @@ _py3 = int (sys.version [0]) >= 3
 if _py3:
     from io import BytesIO as StrIO
     import xmlrpc.client as _xmlrpclib
+    GzipDecodedResponse = _xmlrpclib.Transport.GzipDecodedResponse
 else:
     from StringIO import StringIO as StrIO
     import xmlrpclib as _xmlrpclib
+    GzipDecodedResponse = _xmlrpclib.GzipDecodedResponse
 
 
 class GpgTransport (_xmlrpclib.Transport):
 
     user_agent = 'pgpxmlrpc'
 
-    def __init__ (self, gpg_homedir, gpg_key, gpg_password, gpg_server_key, gpg_executable = 'gpg', headers = None, use_datetime = 0):
+    def __init__ (self, gpg_homedir, gpg_key, gpg_password, gpg_server_key, gpg_executable = 'gpg', headers = None, use_datetime = 0, encoding = 'utf8'):
         _xmlrpclib.Transport.__init__ (self, use_datetime)
         self.gpg_server_key = gpg_server_key
         self.gpg_key = gpg_key
         self.gpg_password = gpg_password
         self.gpg = regnupg.GnuPG (homedir = gpg_homedir, executable = gpg_executable)
+        self.gpg.encoding = encoding
         self.headers = headers or {}
 
     def send_request (self, connection, handler, request_body, *args, **kwargs):
@@ -54,7 +57,7 @@ class GpgTransport (_xmlrpclib.Transport):
 
     def parse_response (self, response):
         if hasattr (response, 'getheader') and response.getheader ('Content-Encoding', '') == 'gzip':
-            stream = _xmlrpclib.Transport.GzipDecodedResponse (response)
+            stream = GzipDecodedResponse (response)
         else:
             stream = response
 
@@ -78,7 +81,7 @@ class GpgTransport (_xmlrpclib.Transport):
             return _xmlrpclib.Transport.parse_response (self, StrIO (encrypted))
 
 
-def Service (uri, service_key, gpg_homedir, gpg_key, gpg_password, headers = None):
+def Service (uri, service_key, gpg_homedir, gpg_key, gpg_password, gpg_executable = 'gpg', headers = None, encoding = 'utf8'):
     return _xmlrpclib.Server (
         uri = uri if uri.endswith ('/') else uri + '/',
         transport = GpgTransport (
@@ -86,7 +89,9 @@ def Service (uri, service_key, gpg_homedir, gpg_key, gpg_password, headers = Non
             gpg_key,
             gpg_password,
             gpg_server_key = service_key,
-            headers = headers
+            gpg_executable = gpg_executable,
+            headers = headers,
+            encoding = encoding
         ),
         allow_none = True
     )
