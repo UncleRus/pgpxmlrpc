@@ -3,7 +3,7 @@
 
 from setuptools import setup
 
-from pgpxmlrpc import __version__ as version
+__version__ = '1.1.1'
 
 
 setup (
@@ -11,7 +11,7 @@ setup (
     description = 'PGP-encrypted transport for XML-RPC protocol',
     long_description = 'This module provides PGP-encrypted transport for XML-RPC protocol',
     license = 'LGPLv3',
-    version = version,
+    version = __version__,
     author = 'Ruslan V. Uss',
     author_email = 'unclerus@gmail.com',
     maintainer = 'Ruslan V. Uss',
