@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 
 import regnupg
@@ -22,7 +22,7 @@ else:
 
 class GpgTransport (_xmlrpclib.Transport):
 
-    user_agent = 'pgpxmlrpc'
+    user_agent = 'pgpxmlrpc v %s' % __version__
 
     def __init__ (self, gpg_homedir, gpg_key, gpg_password, gpg_server_key, gpg_executable = 'gpg', headers = None, use_datetime = 0, encoding = 'utf8'):
         _xmlrpclib.Transport.__init__ (self, use_datetime)
@@ -81,7 +81,7 @@ class GpgTransport (_xmlrpclib.Transport):
             return _xmlrpclib.Transport.parse_response (self, StrIO (encrypted))
 
 
-def Service (uri, service_key, gpg_homedir, gpg_key, gpg_password, gpg_executable = 'gpg', headers = None, encoding = 'utf8'):
+def Service (uri, service_key, gpg_homedir, gpg_key, gpg_password, gpg_executable = 'gpg', headers = None, use_datetime = 1, encoding = 'utf8'):
     return _xmlrpclib.Server (
         uri = uri if uri.endswith ('/') else uri + '/',
         transport = GpgTransport (
@@ -91,6 +91,7 @@ def Service (uri, service_key, gpg_homedir, gpg_key, gpg_password, gpg_executabl
             gpg_server_key = service_key,
             gpg_executable = gpg_executable,
             headers = headers,
+            use_datetime = use_datetime,
             encoding = encoding
         ),
         allow_none = True
