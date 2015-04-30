@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '1.2.0'
+__version__ = '1.2.1'
 
 
 import regnupg
@@ -119,6 +119,8 @@ class ProxyGpgTransport (_xmlrpclib.Transport):
 
         try:
             return self.parse_response (StrIO (encrypted))
+        except _xmlrpclib.Fault:
+            raise
         except:
             decrypted = self.gpg.decrypt (encrypted, self.gpg_password, self.gpg_server_key, always_trust = True).data
             if not decrypted:
