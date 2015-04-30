@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '1.1.1'
+__version__ = '1.2.0'
 
 
 import regnupg
 import sys
+import urllib2
 
 
 _py3 = int (sys.version [0]) >= 3
@@ -51,7 +52,6 @@ class GpgTransport (_xmlrpclib.Transport):
         connection.putheader ('Content-Type', 'application/pgp-encrypted')
         encrypted = self.gpg.encrypt (request_body, self.gpg_server_key, self.gpg_key,
             self.gpg_password, always_trust = True).data.encode ('utf-8')
-        encrypted = encrypted
         connection.putheader ('Content-Length', str (len (encrypted)))
         connection.endheaders (encrypted)
 
@@ -81,6 +81,51 @@ class GpgTransport (_xmlrpclib.Transport):
             return _xmlrpclib.Transport.parse_response (self, StrIO (encrypted))
 
 
+class ProxyGpgTransport (_xmlrpclib.Transport):
+
+    def __init__ (self, proxy, gpg_homedir, gpg_key, gpg_password, gpg_server_key, gpg_executable = 'gpg', headers = None, use_datetime = 0, encoding = 'utf8'):
+        _xmlrpclib.Transport.__init__ (self, use_datetime)
+        self.proxy = {'http': proxy} if proxy else {}
+        self.gpg_server_key = gpg_server_key
+        self.gpg_key = gpg_key
+        self.gpg_password = gpg_password
+        self.gpg = regnupg.GnuPG (homedir = gpg_homedir, executable = gpg_executable)
+        self.gpg.encoding = encoding
+        self.headers = headers or {}
+
+    def request (self, host, handler, request_body, verbose = 0):
+        self.verbose = verbose
+
+        headers = {header: val for header, val in self.headers.items () if header not in ('Content-Type', 'Content-Length')}
+        headers ['Content-Type'] = 'application/pgp-encrypted'
+
+        url = 'http://{}{}/{}'.format (host, handler.rstrip ('/'), self.gpg_key)
+        proxy_handler = urllib2.ProxyHandler (self.proxy)
+        opener = urllib2.build_opener (proxy_handler, urllib2.HTTPHandler)
+
+        encrypted = opener.open (
+            urllib2.Request (
+                url,
+                self.gpg.encrypt (
+                    request_body,
+                    self.gpg_server_key,
+                    self.gpg_key,
+                    self.gpg_password,
+                    always_trust = True
+                ).data.encode ('utf-8'),
+                headers
+            )
+        ).read ()
+
+        try:
+            return self.parse_response (StrIO (encrypted))
+        except:
+            decrypted = self.gpg.decrypt (encrypted, self.gpg_password, self.gpg_server_key, always_trust = True).data
+            if not decrypted:
+                raise RuntimeError ('Decryption failed')
+            return self.parse_response (StrIO (decrypted))
+
+
 def Service (uri, service_key, gpg_homedir, gpg_key, gpg_password, gpg_executable = 'gpg', headers = None, use_datetime = 1, encoding = 'utf8'):
     return _xmlrpclib.Server (
         uri = uri if uri.endswith ('/') else uri + '/',
@@ -96,4 +141,23 @@ def Service (uri, service_key, gpg_homedir, gpg_key, gpg_password, gpg_executabl
         ),
         allow_none = True
     )
+
+
+def ProxyService (uri, proxy, service_key, gpg_homedir, gpg_key, gpg_password, gpg_executable = 'gpg', headers = None, use_datetime = 1, encoding = 'utf8'):
+    return _xmlrpclib.Server (
+        uri = uri if uri.endswith ('/') else uri + '/',
+        transport = ProxyGpgTransport (
+            proxy,
+            gpg_homedir,
+            gpg_key,
+            gpg_password,
+            gpg_server_key = service_key,
+            gpg_executable = gpg_executable,
+            headers = headers,
+            use_datetime = use_datetime,
+            encoding = encoding
+        ),
+        allow_none = True
+    )
+
 
