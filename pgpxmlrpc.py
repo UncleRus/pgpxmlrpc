@@ -122,7 +122,7 @@ class ProxyGpgTransport (_xmlrpclib.Transport):
         except _xmlrpclib.Fault:
             raise
         except:
-            decrypted = self.gpg.decrypt (encrypted, self.gpg_password, self.gpg_server_key, always_trust = True).data
+            decrypted = self.gpg.decrypt (encrypted, self.gpg_password, self.gpg_server_key, always_trust = True).data.encode ('utf-8')
             if not decrypted:
                 raise RuntimeError ('Decryption failed')
             return self.parse_response (StrIO (decrypted))
