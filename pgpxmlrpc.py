@@ -34,12 +34,12 @@ class GpgTransport(_xmlrpclib.Transport):
 
     def send_request(self, connection, handler, request_body, *args, **kwargs):
         return _xmlrpclib.Transport.send_request(
-                self,
-                connection,
-                '{}/{}'.format(handler.rstrip('/'), self.gpg_key),
-                request_body,
-                *args,
-                **kwargs
+            self,
+            connection,
+            '{}/{}'.format(handler.rstrip('/'), self.gpg_key),
+            request_body,
+            *args,
+            **kwargs
         )
 
     def send_content(self, connection, request_body):
@@ -103,17 +103,17 @@ class ProxyGpgTransport(_xmlrpclib.Transport):
         opener = urllib.build_opener(proxy_handler, urllib.HTTPHandler)
 
         encrypted = opener.open(
-                urllib.Request(
-                        url,
-                        self.gpg.encrypt(
-                                request_body,
-                                self.gpg_server_key,
-                                self.gpg_key,
-                                self.gpg_password,
-                                always_trust=True
-                        ).data.encode('utf-8'),
-                        headers
-                )
+            urllib.Request(
+                url,
+                self.gpg.encrypt(
+                    request_body,
+                    self.gpg_server_key,
+                    self.gpg_key,
+                    self.gpg_password,
+                    always_trust=True
+                ).data.encode('utf-8'),
+                headers
+            )
         ).read()
 
         try:
@@ -131,35 +131,35 @@ class ProxyGpgTransport(_xmlrpclib.Transport):
 def Service(uri, service_key, gpg_homedir, gpg_key, gpg_password, gpg_executable='gpg', headers=None, use_datetime=1,
             encoding='utf8'):
     return _xmlrpclib.Server(
-            uri=uri if uri.endswith('/') else uri + '/',
-            transport=GpgTransport(
-                    gpg_homedir,
-                    gpg_key,
-                    gpg_password,
-                    gpg_server_key=service_key,
-                    gpg_executable=gpg_executable,
-                    headers=headers,
-                    use_datetime=use_datetime,
-                    encoding=encoding
-            ),
-            allow_none=True
+        uri=uri if uri.endswith('/') else uri + '/',
+        transport=GpgTransport(
+            gpg_homedir,
+            gpg_key,
+            gpg_password,
+            gpg_server_key=service_key,
+            gpg_executable=gpg_executable,
+            headers=headers,
+            use_datetime=use_datetime,
+            encoding=encoding
+        ),
+        allow_none=True
     )
 
 
 def ProxyService(uri, proxy, service_key, gpg_homedir, gpg_key, gpg_password, gpg_executable='gpg', headers=None,
                  use_datetime=1, encoding='utf8'):
     return _xmlrpclib.Server(
-            uri=uri if uri.endswith('/') else uri + '/',
-            transport=ProxyGpgTransport(
-                    proxy,
-                    gpg_homedir,
-                    gpg_key,
-                    gpg_password,
-                    gpg_server_key=service_key,
-                    gpg_executable=gpg_executable,
-                    headers=headers,
-                    use_datetime=use_datetime,
-                    encoding=encoding
-            ),
-            allow_none=True
+        uri=uri if uri.endswith('/') else uri + '/',
+        transport=ProxyGpgTransport(
+            proxy,
+            gpg_homedir,
+            gpg_key,
+            gpg_password,
+            gpg_server_key=service_key,
+            gpg_executable=gpg_executable,
+            headers=headers,
+            use_datetime=use_datetime,
+            encoding=encoding
+        ),
+        allow_none=True
     )
