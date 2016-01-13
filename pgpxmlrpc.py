@@ -5,20 +5,22 @@ __version__ = '1.2.2'
 
 import regnupg
 import sys
-import urllib2
 
 
-_py3 = int (sys.version [0]) >= 3
+_py3 = sys.version_info[0] == 3
 
 
 if _py3:
     from io import BytesIO as StrIO
+    import urllib.request as urllib
     import xmlrpc.client as _xmlrpclib
-    GzipDecodedResponse = _xmlrpclib.Transport.GzipDecodedResponse
 else:
     from StringIO import StringIO as StrIO
+    import urllib2 as urllib
     import xmlrpclib as _xmlrpclib
-    GzipDecodedResponse = _xmlrpclib.GzipDecodedResponse
+
+
+GzipDecodedResponse = _xmlrpclib.GzipDecodedResponse
 
 
 class GpgTransport (_xmlrpclib.Transport):
@@ -100,11 +102,11 @@ class ProxyGpgTransport (_xmlrpclib.Transport):
         headers ['Content-Type'] = 'application/pgp-encrypted'
 
         url = 'http://{}{}/{}'.format (host, handler.rstrip ('/'), self.gpg_key)
-        proxy_handler = urllib2.ProxyHandler (self.proxy)
-        opener = urllib2.build_opener (proxy_handler, urllib2.HTTPHandler)
+        proxy_handler = urllib.ProxyHandler (self.proxy)
+        opener = urllib.build_opener (proxy_handler, urllib.HTTPHandler)
 
         encrypted = opener.open (
-            urllib2.Request (
+            urllib.Request (
                 url,
                 self.gpg.encrypt (
                     request_body,
@@ -161,5 +163,3 @@ def ProxyService (uri, proxy, service_key, gpg_homedir, gpg_key, gpg_password, g
         ),
         allow_none = True
     )
-
-
