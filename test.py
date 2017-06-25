@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
-# FIXME: По уму эту жесть надо убирать, но пока и так сойдет
 import sys
-sys.path.append ('/home/rus/work/home/regnupg')
 import pgpxmlrpc
-
-
 import unittest
 import os.path as osp
 

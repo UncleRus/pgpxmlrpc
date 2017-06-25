@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '1.2.2'
+__version__ = '1.2.3'
+
 
 import regnupg
 import sys
 
+
 _py3 = sys.version_info[0] == 3
+
 
 if _py3:
     from io import BytesIO as StrIO
@@ -15,6 +18,7 @@ else:
     from StringIO import StringIO as StrIO
     import urllib2 as urllib
     import xmlrpclib as _xmlrpclib
+
 
 GzipDecodedResponse = _xmlrpclib.GzipDecodedResponse
 

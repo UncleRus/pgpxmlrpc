@@ -1,17 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
+import os
 from setuptools import setup
 
-__version__ = '1.2.2'
+
+DIR = os.path.dirname(__file__)
 
 
-setup (
+with open(os.path.join(DIR, 'pgpxmlrpc.py')) as f:
+    version = re.search(r'__version__\s+=\s+[\'\"]+(.*)[\'\"]+', f.read()).group(1)
+
+setup(
     name = 'pgpxmlrpc',
     description = 'PGP-encrypted transport for XML-RPC protocol',
     long_description = 'This module provides PGP-encrypted transport for XML-RPC protocol',
     license = 'LGPLv3',
-    version = __version__,
+    version = version,
     author = 'Ruslan V. Uss',
     author_email = 'unclerus@gmail.com',
     maintainer = 'Ruslan V. Uss',
